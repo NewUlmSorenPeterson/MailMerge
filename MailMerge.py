@@ -1,8 +1,9 @@
 from mailmerge import MailMerge
 import openpyxl
 import os
-
-bid = openpyxl.load_workbook(r'C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\TestDocument.xlsx', data_only=True)
+excel_directory = input("Enter excel location: ")
+export_directory = input("Enter export directory: ")
+bid = openpyxl.load_workbook(excel_directory, data_only=True)
 ws = bid.active
 count = 0
 table_dict= {}
@@ -18,7 +19,10 @@ for sheet in bid.worksheets:
                     row_list.append(entry.row)
                     name = entry.offset(row=1, column=0).value
                     address = "{} {}".format(entry.offset(row=2, column=0).value, entry.offset(row=3, column=0).value)
-                    lot = str(entry.offset(row=0, column=1).value)
+                    if entry.offset(row=0, column=1).value == None:
+                        lot = ""
+                    else:
+                        lot = str(entry.offset(row=0, column=1).value)
                     block = entry.offset(row=0, column=2).value
                     value = entry.offset(row=3, column=15).value
                     project = entry.offset(row=0, column=17).value
@@ -54,7 +58,7 @@ for i in project_list:
         if table_dict[key]['Project'] == i:
             merge_list.append({'Pin': table_dict[key]['Pin'], 'Name': table_dict[key]['Name'], 'Description' : table_dict[key]['Description']})
     document.merge_templates(merge_list, separator='page_break')
-    export_path = r'C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16'
+    export_path = export_directory
     file_name = '{}.docx'.format(i)
     print("Exporting {}...".format(file_name))
     document.write(os.path.join(export_path, file_name))
