@@ -17,15 +17,15 @@ for sheet in bid.worksheets:
                 if '001.' in entry.value:
                     count = count + 1
                     row_list.append(entry.row)
-                    name = entry.offset(row=1, column=0).value
-                    address = "{} {}".format(entry.offset(row=2, column=0).value, entry.offset(row=3, column=0).value)
+                    name = str(entry.offset(row=1, column=0).value)
+                    address = "{} {}".format(str(entry.offset(row=2, column=0).value), str(entry.offset(row=3, column=0).value))
                     if entry.offset(row=0, column=1).value == None:
                         lot = ""
                     else:
                         lot = str(entry.offset(row=0, column=1).value)
-                    block = entry.offset(row=0, column=2).value
-                    value = entry.offset(row=3, column=15).value
-                    project = entry.offset(row=0, column=17).value
+                    block = str(entry.offset(row=0, column=2).value)
+                    value = str(entry.offset(row=3, column=15).value)
+                    project = str(entry.offset(row=0, column=17).value)
                     project_stripped = project.replace(" ","")
                     block_stripped = " ".join(block.split())
                     lot_stripped = " ".join(lot.split())
@@ -47,6 +47,7 @@ template = r"C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\sample.docx"
 document = MailMerge(template)
 merge_list = []
 project_list = []
+print_count = 0
 for key in table_dict:
     if table_dict[key]['Project'] not in project_list:
         project_list.append(table_dict[key]['Project'])
@@ -56,6 +57,7 @@ for i in project_list:
     merge_list = []
     for key in table_dict:
         if table_dict[key]['Project'] == i:
+            print_count = print_count + 1
             merge_list.append({'Pin': table_dict[key]['Pin'], 'Name': table_dict[key]['Name'], 'Description' : table_dict[key]['Description']})
     document.merge_templates(merge_list, separator='page_break')
     export_path = export_directory
@@ -63,3 +65,4 @@ for i in project_list:
     print("Exporting {}...".format(file_name))
     document.write(os.path.join(export_path, file_name))
     merge_list.clear()
+print("{} total pages created".format(print_count))
