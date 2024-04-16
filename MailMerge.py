@@ -2,7 +2,8 @@ from mailmerge import MailMerge
 import openpyxl
 import os
 excel_directory = input("Enter excel location: ")
-export_directory = input("Enter export directory: ")
+template_directory = input("Enter Docx template location: ")
+export_directory = input("Enter export folder: ")
 bid = openpyxl.load_workbook(excel_directory, data_only=True)
 ws = bid.active
 count = 0
@@ -43,7 +44,7 @@ table_headers = start_row - 4
 headers = list(ws.iter_rows(max_col=ws.max_column, min_row =table_headers, max_row=table_headers, values_only=True))
 print("Count:{}".format(count))
 
-template = r"C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\sample.docx"
+template = template_directory
 document = MailMerge(template)
 merge_list = []
 project_list = []
@@ -52,7 +53,7 @@ for key in table_dict:
     if table_dict[key]['Project'] not in project_list:
         project_list.append(table_dict[key]['Project'])
 for i in project_list:
-    template = r"C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\sample.docx"
+    template = template_directory
     document = MailMerge(template)
     merge_list = []
     for key in table_dict:
