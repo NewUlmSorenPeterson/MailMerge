@@ -9,8 +9,8 @@ col_list = []
 header_list = ()
 project_list = []
 
+## Excel Parsing
 def excel_parsing(excel_directory):
-    ## Excel Parsing
     bid = openpyxl.load_workbook(excel_directory, data_only=True)
     ws = bid.active
     count = 0
@@ -48,8 +48,8 @@ def excel_parsing(excel_directory):
     print("Count:{}".format(count))
     return table_dict
 
+## Mail Merge
 def mailmerge(template_directory, folder_locations):
-    ## Mail Merge
     template = template_directory
     document = MailMerge(template)
     merge_list = []
@@ -75,6 +75,7 @@ def mailmerge(template_directory, folder_locations):
         merge_list.clear()
     print("{} Documents with a total of {} pages created in Documents".format(document_count, print_count))
 
+## Create output folders
 def create_project(base_folder):
         output = os.path.join(base_folder, "MailMerge_Export")
         if not os.path.exists(output):
