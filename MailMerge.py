@@ -3,6 +3,8 @@ import openpyxl
 import os
 import pandas as pd
 
+## FOR TEMPLATE A ##
+
 table_dict= {}
 row_list = []
 col_list = []
@@ -40,6 +42,7 @@ def excel_parsing(excel_directory):
                         ##need to clean up lot and blocks, sometimes no lot number or worded strangely, clear whitespaces
                         table_dict[entry.row]['Description'] = 'Lot {} Block {}'.format(lot_stripped, block_stripped)
                         table_dict[entry.row]['Project'] = project_stripped
+                        table_dict[entry.row]['Value'] = value
                 except (AttributeError, TypeError):
                     continue
     start_row = row_list[0]
@@ -52,7 +55,6 @@ def excel_parsing(excel_directory):
 def mailmerge(template_directory, folder_locations):
     template = template_directory
     document = MailMerge(template)
-    merge_list = []
     print_count = 0
     document_count = 0
     for key in table_dict:
