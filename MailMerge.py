@@ -1,9 +1,14 @@
 from mailmerge import MailMerge
 import openpyxl
 import os
+import pandas as pd
+
+print("*Excel Mail Merge* \nExcel files must follow one of the assessment templates to be compatible \nNotices must be in .docx format, if other, open the file and save as a .docx")
 excel_directory = input("Enter excel location: ")
 template_directory = input("Enter Docx template location: ")
 export_directory = input("Enter export folder: ")
+
+## Excel Parsing
 bid = openpyxl.load_workbook(excel_directory, data_only=True)
 ws = bid.active
 count = 0
@@ -44,6 +49,7 @@ table_headers = start_row - 4
 headers = list(ws.iter_rows(max_col=ws.max_column, min_row =table_headers, max_row=table_headers, values_only=True))
 print("Count:{}".format(count))
 
+## Mail Merge
 template = template_directory
 document = MailMerge(template)
 merge_list = []
@@ -62,8 +68,17 @@ for i in project_list:
             merge_list.append({'Pin': table_dict[key]['Pin'], 'Name': table_dict[key]['Name'], 'Description' : table_dict[key]['Description']})
     document.merge_templates(merge_list, separator='page_break')
     export_path = export_directory
-    file_name = '{}.docx'.format(i)
-    print("Exporting {}...".format(file_name))
-    document.write(os.path.join(export_path, file_name))
+    docx_file_name = '{}.docx'.format(i)
+    print("Exporting {}...".format(docx_file_name))
+    document.write(os.path.join(export_path, docx_file_name))
     merge_list.clear()
 print("{} total pages created".format(print_count))
+
+## Write dictionary to table for mailing labels
+df = pd.DataFrame.from_dict(table_dict, orient='index')
+for i in project_list:
+    query_string = 'Project == "{}"'.format(i)
+    filter = df.query(query_string) 
+    print(filter)
+    excel_file_name = "{}.xlsx".format(i)
+    filter.to_excel(os.path.join(export_path, excel_file_name))
