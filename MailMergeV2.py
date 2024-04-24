@@ -12,6 +12,7 @@ col_list = []
 header_list = ()
 project_list = []
 mailing_dict = {}
+project_group = []
 
 ## Excel Parsing
 def excel_parsing(excel_directory):
@@ -50,7 +51,6 @@ def excel_parsing(excel_directory):
                         table_dict[count]['Description'] = 'Lot {} Block {}'.format(lot_stripped, block_stripped)
                         table_dict[count]['Project'] = project_stripped
                         table_dict[count]['Value'] = value
-                        table_dict[count]['mailing_row'] = row_count
                         if count == 1:
                             table_dict[count]['mailing_index'] = "col1"
                         else:
@@ -60,7 +60,6 @@ def excel_parsing(excel_directory):
                                 table_dict[count]['mailing_index'] = "col3"
                             if table_dict[count - 1]['mailing_index'] == "col3":
                                 table_dict[count]['mailing_index'] = "col1"
-                        
                         
                 except (AttributeError, TypeError):
                     continue
@@ -72,22 +71,21 @@ def excel_parsing(excel_directory):
 
 def table_sorting():
     for i in table_dict:
-        if table_dict[i]['mailing_row'] not in row_group:
-            row_group.append(table_dict[i]['mailing_row'])
-    print(row_group)
-
-    for k in row_group:
+        if table_dict[i]['Project'] not in project_group:
+            project_group.append(table_dict[i]['Project'])
+    print(project_group)
+    for k in project_group:
         row_id = k
         mailing_dict[row_id] = {}
+        mailing_dict_row_counter = 0
+        mailing_dict_count = 0
         for t in table_dict:
-            if table_dict[t]['mailing_row'] == row_id:
-                if table_dict[t]['mailing_index'] == "col1":
-                    address = table_dict[t]['Address1']
-                    mailing_dict[row_id]["column1"] = "{}\n{}\n{}".format(table_dict[t]['Name'], table_dict[t]['Address1'],table_dict[t]['Address2'])
-                if table_dict[t]['mailing_index'] == "col2":
-                    mailing_dict[row_id]["column2"] = "{}\n{}\n{}".format(table_dict[t]['Name'], table_dict[t]['Address1'],table_dict[t]['Address2'])
-                if table_dict[t]['mailing_index'] == "col3":
-                    mailing_dict[row_id]["column3"] = "{}\n{}\n{}".format(table_dict[t]['Name'], table_dict[t]['Address1'],table_dict[t]['Address2'])
+            if table_dict[t]['Project'] == row_id:
+                mailing_dict_count = mailing_dict_count + 1
+                mailing_dict[row_id][mailing_dict_count] = "{}\n{}\n{}".format(table_dict[t]['Name'], table_dict[t]['Address1'],table_dict[t]['Address2'])
+                mailing_dict[row_id]['project'] = row_id
+
+
     print(mailing_dict)
     del i
     del k
@@ -122,19 +120,41 @@ def mailmerge(template_directory, folder_locations):
     print("{} Documents with a total of {} pages created in Documents".format(document_count, print_count))
 
 def mailing_labels(folder_locations):
-    template2 = r"C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\table_Test.docx"
+    template2 = r"C:\Users\soren.peterson\Desktop\Tempshapes\2024_04_16\table_Test2.docx"
     document2 = MailMerge(template2)
     print_count = 0
     document_count = 0
-    for i in row_group:
+    print(project_list)
+    for k in project_list:
+        merge_list = []
         template = template_directory
         document2 = MailMerge(template2)
-        merge_list = []
-        merge_list.append({'col1': mailing_dict[i]['column1'], 'col2': mailing_dict[i]['column2'], 'col3' : mailing_dict[i]['column3']})
+        current_project = k
+        merge_count = 1
+        ## get keys as list and try to build a dictionary in groups of threww for range of list. mailing_dict[current_project][k]
+        for t in mailing_dict:
+            if mailing_dict[t]['project'] == current_project:
+                for k in mailing_dict[current_project]:
+                    current_number = k
+                    if k != 'project':
+                        if not any(d["col1"] == mailing_dict[current_project][k] or d["col2"] == mailing_dict[current_project][k] or d["col3"] == mailing_dict[current_project][k] for d in merge_list):
+
+                            try:
+                                merge_list.append({"col1" : mailing_dict[current_project][k], "col2" : mailing_dict[current_project][k+1], "col3" : mailing_dict[current_project][k+2]})
+                            except:
+                                try:
+                                    merge_list.append({"col1" : mailing_dict[current_project][k], "col2" : mailing_dict[current_project][k+1]})
+                                except:
+                                    try:
+                                        merge_list.append({"col1" : mailing_dict[current_project][k]})
+                                    except:
+                                        pass
+
+        print(merge_list)
         document2.merge_rows('col1',
-                    merge_list)
+                            merge_list)
         export_path = folder_locations[1]
-        docx_file_name = '{}_t.docx'.format(i)
+        docx_file_name = '{}_t.docx'.format(current_project)
         print("Exporting {}...".format(docx_file_name))
         document2.write(os.path.join(export_path, docx_file_name))
         document_count = document_count + 1
